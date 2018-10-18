@@ -19,9 +19,9 @@
                  {:produces ["application/json"]
                   :responses {}
                   :x-amazon-apigateway-integration
-                  {:uri #cfn.Sub{:value (str "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ComputeGroup}-"
-                                             (name lambda)
-                                             "/invocations")}
+                  {:uri (cfn/->Sub (str "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ComputeGroup}-"
+                                        (name lambda)
+                                        "/invocations"))
                    :responses {:default {:statusCode "200"}}
                    :passthroughBehavior "when_no_match"
                    :httpMethod "POST"
