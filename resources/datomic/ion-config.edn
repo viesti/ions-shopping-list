@@ -1,0 +1,9 @@
+{:allow [ion-shopping-list.core/get-items]
+
+ :lambdas
+ {:get-items
+  {:fn ion-shopping-list.core/get-items
+   :description "Get contents of shopping list"
+   :integration :api-gateway/proxy}}
+
+ :app-name "tiuhti"}

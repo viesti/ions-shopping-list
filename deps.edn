@@ -1,0 +1,12 @@
+{:paths ["src" "resources"]
+ :deps {com.datomic/ion {:mvn/version "0.9.16"}}
+ :mvn/repos {"datomic-cloud" {:url "s3://datomic-releases-1fc2183a/maven/releases"}}
+ :aliases
+ {:dev {:extra-deps {com.datomic/ion-dev {:mvn/version "0.9.175"}
+                     circleci/clj-yaml {:mvn/version "0.5.5"}
+                     cider/cider-nrepl {:mvn/version "0.18.0"}
+                     amazonica/amazonica {:mvn/version "0.3.132"
+                                          :exclusions [com.amazonaws/aws-java-sdk
+                                                       com.amazonaws/amazon-kinesis-client]}
+                     com.amazonaws/aws-java-sdk-bundle {:mvn/version "1.11.391"}}
+        :extra-paths ["dev"]}}}
