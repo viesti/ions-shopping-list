@@ -43,11 +43,11 @@
     (.addTypeDescription yaml (make-type-description Ref))
     yaml))
 
-(defn parse [yml]
-  (yaml/decode (.load (make-yaml) yml) true))
+(defn parse [cfn-yml]
+  (yaml/decode (.load (make-yaml) cfn-yml) true))
 
-(defn generate-string [data]
-  (.dump (make-yaml) (yaml/encode data)))
+(defn generate-string [cfn-data]
+  (.dump (make-yaml) (yaml/encode cfn-data)))
 
 (defn load-and-print [filename]
   (println (.dump (make-yaml) (yaml/encode (parse (slurp filename))))))
