@@ -6,21 +6,21 @@
            [org.yaml.snakeyaml.nodes Tag]
            [org.yaml.snakeyaml.nodes ScalarNode]))
 
-(defmacro yaml-tag-record [tag]
-  `(defrecord ~tag ~['value]
+(defmacro deftag [name]
+  `(defrecord ~name ~['value]
      yaml/YAMLCodec
      ~(list 'encode ['this]
         'this)
      (~'decode [~'this ~'keywords]
-      (new ~tag ~'value))))
+      (new ~name ~'value))))
 
 (defmacro make-type-description [tag]
   `(proxy ~['TypeDescription] ~[tag (str "!" tag)]
      (~'newInstance ~['node]
       (new ~tag ~'(.getValue node)))))
 
-(yaml-tag-record Sub)
-(yaml-tag-record Ref)
+(deftag Sub)
+(deftag Ref)
 
 (defn make-yaml []
   (let [representers-field (-> Representer
