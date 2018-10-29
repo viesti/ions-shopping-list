@@ -1,9 +1,18 @@
-{:allow [ion-shopping-list.core/get-items]
+{:allow [;; transaction functions
+         ion-shopping-list.txfn/inc-count
+
+         ;; web stuff
+         ion-shopping-list.core/get-items
+         ion-shopping-list.core/add-item]
 
  :lambdas
  {:get-items
   {:fn ion-shopping-list.core/get-items
    :description "Get contents of shopping list"
+   :integration :api-gateway/proxy}
+  :add-item
+  {:fn ion-shopping-list.core/add-item
+   :description "Add item to shopping list"
    :integration :api-gateway/proxy}}
 
  :app-name "tiuhti"}

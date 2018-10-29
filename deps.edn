@@ -1,12 +1,30 @@
 {:paths ["src" "resources"]
- :deps {com.datomic/ion {:mvn/version "0.9.16"}}
+ :deps {com.datomic/ion {:mvn/version "0.9.26"}
+        com.cognitect/transit-clj {:mvn/version "0.8.313"}}
  :mvn/repos {"datomic-cloud" {:url "s3://datomic-releases-1fc2183a/maven/releases"}}
  :aliases
- {:dev {:extra-deps {com.datomic/ion-dev {:mvn/version "0.9.175"}
+ {:dev {:extra-deps {;; Datomic dev deps
+                     com.datomic/ion-dev {:mvn/version "0.9.176"}
+                     com.datomic/client-cloud {:mvn/version "0.8.63"}
+
+                     ;; Other dev deps
+                     ;; Cloudformation template generation
                      circleci/clj-yaml {:mvn/version "0.5.5"}
+                     ;; Emacs
                      cider/cider-nrepl {:mvn/version "0.18.0"}
+                     ;; AWS API
                      amazonica/amazonica {:mvn/version "0.3.132"
                                           :exclusions [com.amazonaws/aws-java-sdk
                                                        com.amazonaws/amazon-kinesis-client]}
-                     com.amazonaws/aws-java-sdk-bundle {:mvn/version "1.11.391"}}
-        :extra-paths ["dev"]}}}
+                     com.amazonaws/aws-java-sdk-cloudformation {:mvn/version "1.11.391"}
+                     com.amazonaws/aws-java-sdk-lambda {:mvn/version "1.11.391"}
+                     com.amazonaws/aws-java-sdk-api-gateway {:mvn/version "1.11.391"}}
+        :extra-paths ["dev"]}
+  :ui {:extra-deps {org.clojure/clojure {:mvn/version "1.9.0"}
+                    org.clojure/clojurescript {:mvn/version "1.10.339"}
+                    com.bhauman/figwheel-main {:mvn/version "0.1.9"}
+                    com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
+
+                    reagent {:mvn/version "0.8.1"}
+                    cljs-ajax {:mvn/version "0.7.5"}}
+       :extra-paths ["src-cljs" "target"]}}}

@@ -35,7 +35,7 @@
     (.put (.get representers-field representer)
           Sub (reify org.yaml.snakeyaml.representer.Represent
                 (representData [this data]
-                      (ScalarNode. (Tag. "!Sub") (.-value data) nil nil nil))))
+                  (ScalarNode. (Tag. "!Sub") (.-value data) nil nil nil))))
     (.put (.get representers-field representer)
           Ref (reify org.yaml.snakeyaml.representer.Represent
                 (representData [this data]
