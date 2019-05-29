@@ -1,7 +1,6 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.0"}
-        com.datomic/ion {:mvn/version "0.9.34"}
-        com.cognitect/transit-clj {:mvn/version "0.8.313"}}
+        com.datomic/ion {:mvn/version "0.9.34"}}
  :mvn/repos {"datomic-cloud" {:url "s3://datomic-releases-1fc2183a/maven/releases"}}
  :aliases
  {:dev {:extra-deps {;; For push and deploy
