@@ -163,7 +163,7 @@
 (comment
   (def client (create-client))
   (def connection (d/connect client {:db-name core/db-name}))
-  (def db (d/db conn))
+  (def db (d/db connection))
 
   (-> (str base-url "/get-items")
       (http/get {:as :json})
