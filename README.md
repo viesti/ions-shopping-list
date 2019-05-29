@@ -18,10 +18,9 @@ user=> (deploy-status *1)
 {:execution-arn arn:aws:states...
 ```
 
-To tail logs:
+To tail logs (using [awslogs](https://github.com/jorgebastida/awslogs), install it first via `brew install awslogs`):
 
 ```sh
-brew install awslogs # for https://github.com/jorgebastida/awslogs
 ./tail.sh
 datomic-ions-demo ions-demo-ions-demo-compute-i-0fc000d5262fb903...
 ```
