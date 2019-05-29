@@ -142,34 +142,39 @@
                          :Parameters [{:ParameterKey "ComputeGroup"
                                        :ParameterValue compute-group}]}}))
 
+(def get-api-id
+  (memoize (fn []
+             (-> cfn-client
+                 (aws/invoke {:op :DescribeStackResource
+                              :request {:StackName "shopping-list-api"
+                                        :LogicalResourceId "Api"}})
+                 :StackResourceDetail
+                 :PhysicalResourceId))))
+
 (defn deploy-api []
-  (let [api-id (-> cfn-client
-                   (aws/invoke {:op :DescribeStackResource
-                                :request {:StackName "shopping-list-api"
-                                          :LogicalResourceId "Api"}})
-                   :StackResourceDetail
-                   :PhysicalResourceId)]
-    (aws/invoke apigw-client
-                {:op :CreateDeployment
-                 :request {:restApiId api-id
-                           :stageName "dev"}})))
+  (aws/invoke apigw-client
+              {:op :CreateDeployment
+               :request {:restApiId (get-api-id)
+                         :stageName "dev"}}))
 
 (defn create-client []
   (d/client core/db-spec))
 
-
-(def base-url "https://v1m7lbz4sd.execute-api.eu-west-1.amazonaws.com/dev")
+(defn base-url []
+  (format "https://%s.execute-api.%s.amazonaws.com/dev"
+          (get-api-id)
+          (.toLowerCase (System/getenv "AWS_REGION"))))
 
 (comment
   (def client (create-client))
   (def connection (d/connect client {:db-name core/db-name}))
   (def db (d/db connection))
 
-  (-> (str base-url "/get-items")
+  (-> (str (base-url) "/get-items")
       (http/get {:as :json})
       :body)
 
-  (-> (str base-url "/add-item")
+  (-> (str (base-url) "/add-item")
       (http/post {:content-type :transit+json
                   :form-params {:item-name "Maitoa"}})
       :body))
