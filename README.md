@@ -17,3 +17,11 @@ user=> (deploy-status *1)
 {:deploy-status RUNNING, :code-deploy-status RUNNING}
 {:execution-arn arn:aws:states...
 ```
+
+To tail logs:
+
+```sh
+brew install awslogs # for https://github.com/jorgebastida/awslogs
+./tail.sh
+datomic-ions-demo ions-demo-ions-demo-compute-i-0fc000d5262fb903...
+```
