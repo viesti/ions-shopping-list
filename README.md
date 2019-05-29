@@ -25,3 +25,22 @@ brew install awslogs # for https://github.com/jorgebastida/awslogs
 ./tail.sh
 datomic-ions-demo ions-demo-ions-demo-compute-i-0fc000d5262fb903...
 ```
+
+For connecting to Datomic Cloud from the repl, [install a proxy](https://docs.datomic.com/cloud/getting-started/connecting.html#socks-proxy) and then run it:
+
+```sh
+./proxy.sh
+```
+
+, and the make queries:
+
+```clojure
+user> (def client (create-client))
+#'user/client
+user> (def connection (d/connect client {:db-name core/db-name}))
+#'user/connection
+user> (def db (d/db connection))
+#'user/db
+user> (d/q core/items-query db)
+[[5774635069079618 "Maitoa" 0] [49675935342919747 "Kahvia" 1]]
+```
