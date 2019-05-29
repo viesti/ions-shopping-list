@@ -2,16 +2,18 @@
   (:require [cider-nrepl.main :as nrepl]
             [clojure.java.io :as io]
             [clojure.edn :as edn]
-            [cfn]
-            [amazonica.aws.cloudformation :as aws-cfn]
-            [amazonica.aws.lambda :as aws-lambda]
-            [amazonica.aws.apigateway :as aws-apigw]
+            [cfn-yaml.core :as cfn]
+            [cfn-yaml.tags.api :refer :all]
             [datomic.client.api :as d]
             [ion-shopping-list.core :as core]
             [ion-shopping-list.txfn :as txfn]
-            [datomic.ion.dev :as dev]))
+            [datomic.ion.dev :as ion-dev]
+            [cognitect.aws.client.api :as aws]
+            [datomic.client.api :as d]
+            [clojure.tools.namespace.repl :refer [refresh]]
+            [clj-http.client :as http]))
 
-(def compute-group "tiuhti-Compute-CS1UK5K6HXWP")
+(def compute-group "ions-demo-compute")
 
 (defn start-nrepl-server
   "Start Nrepl server for use with Cider"
@@ -34,9 +36,9 @@
               {:x-amazon-apigateway-any-method
                {:responses {}
                 :x-amazon-apigateway-integration
-                {:uri (cfn/->Sub (str "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ComputeGroup}-"
-                                      (name lambda)
-                                      "/invocations"))
+                {:uri (!Sub (str "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ComputeGroup}-"
+                                 (name lambda)
+                                 "/invocations"))
                  :responses {:default {:statusCode "200"}}
                  :passthroughBehavior "when_no_match"
                  :httpMethod "POST"
@@ -49,12 +51,13 @@
               {:Type "AWS::Lambda::Permission"
                :Properties
                {:Action "lambda:InvokeFunction"
-                :FunctionName (cfn/->Sub (str "${ComputeGroup}-" (name lambda)))
+                :FunctionName (!Sub (str "${ComputeGroup}-" (name lambda)))
                 :Principal "apigateway.amazonaws.com"
-                :SourceArn #cfn.Sub{:value "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*"}}}])))
+                :SourceArn (!Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*")}}])))
 
-(def template
+(defn create-api-template
   "Cloudformation template for making API Gateway for Datomic Ions Lambdas"
+  []
   (let [ion-config (edn/read-string (slurp (io/resource "datomic/ion-config.edn")))
         resources {:Api
                    {:Type "AWS::ApiGateway::RestApi"
@@ -69,7 +72,7 @@
                    :DevStage
                    {:Type "AWS::ApiGateway::Deployment"
                     :Properties
-                    {:RestApiId #cfn.Ref{:value "Api"}
+                    {:RestApiId (!Ref "Api")
                      :StageName "dev"}}}
         resources (merge resources (invoke-permissions ion-config))]
     {:AWSTemplateFormatVersion "2010-09-09"
@@ -98,33 +101,75 @@
 
 (defn migrate
   "Transacts schema to a database"
-  [db-name]
-  (let [client (d/client core/db-spec)]
-    (d/create-database client {:db-name db-name})
-    (d/transact (d/connect client {:db-name db-name})
-                {:tx-data (-> (io/resource "schema.edn")
-                              (slurp)
-                              (edn/read-string))})))
+  ([client]
+   (migrate client "shopping-list"))
+  ([client db-name]
+   (d/create-database client {:db-name db-name})
+   (d/transact (d/connect client {:db-name db-name})
+               {:tx-data (-> (io/resource "schema.edn")
+                             (slurp)
+                             (edn/read-string))})))
 
-(defn update-stack []
-  (aws-cfn/update-stack :stack-name "shopping-list-api"
-                        :template-body (cfn/generate-string template)
-                        :parameters [{:parameter-key "ComputeGroup"
-                                      :parameter-value compute-group}]))
+(def cfn-client (aws/client {:api :cloudformation}))
+(def apigw-client (aws/client {:api :apigateway}))
+
+(defn push []
+  (ion-dev/push {:uname "dev"}))
+
+(defn deploy []
+  (ion-dev/deploy {:app-name "ions-demo"
+                   :uname "dev"
+                   :group compute-group
+                   :description "repl deploy"}))
+
+(defn deploy-status [m]
+  (println (ion-dev/deploy-status m))
+  m)
+
+(defn create-api-stack []
+  (aws/invoke cfn-client
+              {:op :CreateStack
+               :request {:StackName "shopping-list-api"
+                         :TemplateBody (cfn/generate-string (create-api-template))
+                         :Parameters [{:ParameterKey "ComputeGroup"
+                                       :ParameterValue compute-group}]}}))
+
+(defn update-api-stack []
+  (aws/invoke cfn-client
+              {:op :UpdateStack
+               :request {:StackName "shopping-list-api"
+                         :TemplateBody (cfn/generate-string (create-api-template))
+                         :Parameters [{:ParameterKey "ComputeGroup"
+                                       :ParameterValue compute-group}]}}))
 
 (defn deploy-api []
-  (aws-apigw/create-deployment :rest-api-id (-> (aws-cfn/describe-stack-resource :stack-name "shopping-list-api" :logical-resource-id "Api")
-                                                :stack-resource-detail
-                                                :physical-resource-id)
-                               :stage-name "dev"))
+  (let [api-id (-> cfn-client
+                   (aws/invoke {:op :DescribeStackResource
+                                :request {:StackName "shopping-list-api"
+                                          :LogicalResourceId "Api"}})
+                   :StackResourceDetail
+                   :PhysicalResourceId)]
+    (aws/invoke apigw-client
+                {:op :CreateDeployment
+                 :request {:restApiId api-id
+                           :stageName "dev"}})))
+
+(defn create-client []
+  (d/client core/db-spec))
+
+
+(def base-url "https://v1m7lbz4sd.execute-api.eu-west-1.amazonaws.com/dev")
 
 (comment
-  #_(aws-cfn/create-stack :stack-name "shopping-list-api"
-                        :template-body (cfn/generate-string template)
-                        :parameters [{:parameter-key "ComputeGroup"
-                                      :parameter-value compute-group}])
+  (def client (create-client))
+  (def connection (d/connect client {:db-name core/db-name}))
+  (def db (d/db conn))
 
-  (aws-cfn/update-stack :stack-name "shopping-list-api"
-                        :template-body (cfn/generate-string template)
-                        :parameters [{:parameter-key "ComputeGroup"
-                                      :parameter-value compute-group}]))
+  (-> (str base-url "/get-items")
+      (http/get {:as :json})
+      :body)
+
+  (-> (str base-url "/add-item")
+      (http/post {:content-type :transit+json
+                  :form-params {:item-name "Maitoa"}})
+      :body))

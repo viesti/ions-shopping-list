@@ -1,27 +1,32 @@
 {:paths ["src" "resources"]
- :deps {com.datomic/ion {:mvn/version "0.9.26"}
+ :deps {org.clojure/clojure {:mvn/version "1.10.0"}
+        com.datomic/ion {:mvn/version "0.9.34"}
         com.cognitect/transit-clj {:mvn/version "0.8.313"}}
  :mvn/repos {"datomic-cloud" {:url "s3://datomic-releases-1fc2183a/maven/releases"}}
  :aliases
- {:dev {:extra-deps {;; Datomic dev deps
-                     com.datomic/ion-dev {:mvn/version "0.9.176"}
-                     com.datomic/client-cloud {:mvn/version "0.8.63"}
+ {:dev {:extra-deps {;; For push and deploy
+                     com.datomic/ion-dev {:mvn/version "0.9.229"}
+                     ;; For making queries to databases from repl
+                     com.datomic/client-cloud {:mvn/version "0.8.71"}
 
-                     ;; Other dev deps
-                     ;; Cloudformation template generation
-                     circleci/clj-yaml {:mvn/version "0.5.5"}
                      ;; Emacs
-                     cider/cider-nrepl {:mvn/version "0.18.0"}
-                     ;; AWS API
-                     amazonica/amazonica {:mvn/version "0.3.132"
-                                          :exclusions [com.amazonaws/aws-java-sdk
-                                                       com.amazonaws/amazon-kinesis-client]}
-                     com.amazonaws/aws-java-sdk-cloudformation {:mvn/version "1.11.391"}
-                     com.amazonaws/aws-java-sdk-lambda {:mvn/version "1.11.391"}
-                     com.amazonaws/aws-java-sdk-api-gateway {:mvn/version "1.11.391"}}
+                     cider/cider-nrepl {:mvn/version "0.21.0"}
+
+                     ;; For refreshing namespaces
+                     org.clojure/tools.namespace {:mvn/version "0.2.11"}
+
+                     ;; For creating/updating API Gateway via cloudformation
+                     cfn-yaml                         {:git/url "git@github.com:portkey-cloud/cfn-yaml.git"
+                                                       :sha     "23e9442ec643007edf45e78af24d3d6c35db4a5e"}
+                     com.cognitect.aws/api            {:mvn/version "0.8.305"}
+                     com.cognitect.aws/endpoints      {:mvn/version "1.1.11.549"}
+                     com.cognitect.aws/apigateway     {:mvn/version "697.2.391.0"}
+                     com.cognitect.aws/cloudformation {:mvn/version "717.2.442.0"}
+
+                     ;; For http calls at the repl
+                     clj-http                         {:mvn/version "3.10.0"}}
         :extra-paths ["dev"]}
-  :ui {:extra-deps {org.clojure/clojure {:mvn/version "1.9.0"}
-                    org.clojure/clojurescript {:mvn/version "1.10.339"}
+  :ui {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.339"}
                     com.bhauman/figwheel-main {:mvn/version "0.1.9"}
                     com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
 

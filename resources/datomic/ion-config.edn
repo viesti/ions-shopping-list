@@ -3,7 +3,11 @@
 
          ;; web stuff
          ion-shopping-list.core/get-items
-         ion-shopping-list.core/add-item]
+         ion-shopping-list.core/add-item
+
+         ;; todo
+         ; ion-shopping-list.core/buy-item
+         ]
 
  :lambdas
  {:get-items
@@ -13,6 +17,11 @@
   :add-item
   {:fn ion-shopping-list.core/add-item
    :description "Add item to shopping list"
+   :integration :api-gateway/proxy}
+  ;; todo
+  #_:delete-item
+  #_{:fn ion-shopping-list.core/buy-item
+   :description "Mark item as bought"
    :integration :api-gateway/proxy}}
 
- :app-name "tiuhti"}
+ :app-name "ions-demo"}
