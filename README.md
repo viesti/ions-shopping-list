@@ -43,3 +43,11 @@ user> (def db (d/db connection))
 user> (d/q core/items-query db)
 [[5774635069079618 "Maitoa" 0] [49675935342919747 "Kahvia" 1]]
 ```
+
+After adding Ions labeled with `:integration :api-gateway/proxy` via `(deploy)`, update the API Gateway via
+
+```clojure
+user> (update-api-stack)
+```
+
+The above can also be used to remove routes to `:api-gateway/proxy` Ions that have been removed from `resources/datomic/ion-config.edn`.
