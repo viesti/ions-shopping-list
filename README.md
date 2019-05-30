@@ -1,6 +1,6 @@
 # ion-shopping-list
 
-Playground for Datomic Ions
+Playground for Datomic Ions. Exposes a couple of Ions through API Gateway.
 
 # Development
 
