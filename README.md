@@ -1,6 +1,6 @@
 # ion-shopping-list
 
-Playground for Datomic IONS
+Playground for Datomic Ions
 
 # Development
 
